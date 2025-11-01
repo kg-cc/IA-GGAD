@@ -82,7 +82,7 @@ def train(args):
         print("Model {}, Trial {}".format(model, seed))
         train_config['seed'] = seed
         for te_data in data_test:
-            te_data.random_sample(args.shot)
+            te_data.test_random_sample(args.shot)
         data = {'train': data_train, 'test': data_test}
         detector = IA_GGAD_Detector(train_config, model_config, data, args)
         test_score_list = detector.train(args)

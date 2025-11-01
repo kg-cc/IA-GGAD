@@ -349,6 +349,17 @@ class Dataset:
         shot_mask[shot_idx] = True
         self.graph.shot_mask = shot_mask
 
+    def test_random_sample(self, shot=10):
+        y = self.graph.ano_labels
+        num_nodes = y.shape[0]
+        all_idx = list(range(num_nodes))
+        random.shuffle(all_idx)
+        shot_idx = torch.tensor(all_idx[:shot])
+        shot_mask = torch.zeros(num_nodes, dtype=torch.bool)
+        shot_mask[shot_idx] = True
+        self.graph.shot_idx = shot_idx
+        self.graph.shot_mask = shot_mask
+
     def propagated(self, k):
         x = torch.FloatTensor(self.feat).cuda()
         h_list = [x]

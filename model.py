@@ -311,11 +311,6 @@ class GCN(nn.Module):
 
                 h_i = 0.5 * h_i + 0.5 * aggregated_features
                 x_list[i + 1] = h_i
-
-        # else:
-        #     h_i = 0.9 * h_i + 0.05 * aggregated_features
-        #     x_list[i + 1] = h_i
-
         return x_list
 
 
@@ -482,25 +477,6 @@ class CrossAttn(nn.Module):
         query_score = message * r_inv
 
         return query_score
-
-    # return query_score
-
-    # def get_test_score(self, node_neighbor, node_emb, codebook_sum, prompt_mask, y):
-    #     diff = node_emb - node_neighbor
-    #
-    #     # cos_sim_n = torch.matmul(node_emb, codebook_sum.T)
-    #     # 找出每个query最相似的码本索引
-    #     # top_idx_n = cos_sim_n.argmax(dim=1)  # [600]
-    #     # code_n = node_emb[top_idx_n]
-    #
-    #     # diff_code = code_n - node_neighbor
-    #
-    #     # score
-    #     query_score = torch.sqrt(torch.sum(diff ** 2, dim=1))
-    #     # query_score_code = torch.sqrt(torch.sum(diff_code ** 2, dim=1))
-    #     # return (query_score + query_score_code) / 2
-    #     return query_score
-    #     # return query_score
 
 
 class VectorQuantize(nn.Module):

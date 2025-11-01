@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 
 import numpy as np
@@ -113,10 +114,10 @@ class IA_GGAD_Detector:
         self.GCN_model = my_GCN(model_config['in_feats'], embedding_dim).to(train_config['device'])
 
     def train(self, args):
+        start_time = time.time()
 
         optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.model_config['lr'],
                                       weight_decay=self.model_config['weight_decay'])
-
         optimizer_GCN = torch.optim.AdamW(self.GCN_model.parameters(), lr=self.model_config['lr'],
                                           weight_decay=self.model_config['weight_decay'])
 
@@ -135,7 +136,6 @@ class IA_GGAD_Detector:
                 train_graph = self.data['train'][didx].graph.to(self.device)
                 node_emb_cut = self.GCN_model(train_graph.dgl_cut_graph, train_graph.x)
                 cut_adj = train_graph.dgl_cut_graph.adj().to_dense().to(self.device)
-
                 loss_cut, message_sum_2 = max_message(node_emb_cut, cut_adj)
 
                 loss += loss_code.squeeze()
@@ -192,12 +192,15 @@ class IA_GGAD_Detector:
                 codebook_sum += codebook_1  # 累加
             codebook_list.append(codebook_1)
 
-        codebook_sum = codebook_sum / 4
-        codebook_sum = codebook_sum.to(self.train_config['device'])
+        # codebook_sum = codebook_sum / 4
+        # codebook_sum = codebook_sum.to(self.train_config['device'])
 
         final_codebook = torch.cat(codebook_list, dim=0).to(self.train_config['device'])
-
+        end_time = time.time()
+        print(f"训练总时间：{end_time - start_time:.2f} 秒")
+        start_time = time.time()
         for didx, test_data in enumerate(self.data['test']):
+
             test_graph = test_data.graph.to(self.train_config['device'])
             labels = test_graph.ano_labels
             shot_mask = test_graph.shot_mask.bool()
@@ -240,9 +243,18 @@ class IA_GGAD_Detector:
             query_scores = (1 - lamda) * query_scores + lamda * final_message[~shot_mask]
 
             test_score = test_eval(query_labels, query_scores)
+
             test_data_name = self.train_config['testdsets'][didx]
             test_score_list[test_data_name] = {
                 'AUROC': test_score['AUROC'],
                 'AUPRC': test_score['AUPRC'],
             }
+        end_time = time.time()
+        print(f"测试总时间：{end_time - start_time:.2f} 秒")
+
+        # 获取显存峰值（单位：MB）
+        max_memory_MB = torch.cuda.max_memory_allocated() / 1024 / 1024 / 1024
+        # peak_gpu_memory_by_torch = torch.cuda.max_memory_allocated() / 1024 / 1024 / 1024
+
+        print(f"训练期间GPU最大显存占用：{max_memory_MB:.2f} GB")
         return test_score_list

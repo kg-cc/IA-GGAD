@@ -412,25 +412,21 @@ class CrossAttn(nn.Module):
 
     def get_test_score(self, X, codebook_sum, prompt_mask, y):
         # prompt node indices
-        negative_indices = torch.nonzero((prompt_mask == True) & (y == 0)).squeeze(1).tolist()
+        negative_indices = torch.nonzero((prompt_mask == True)).squeeze(1).tolist()
 
         n_support_embed = X[negative_indices]
 
         cos_sim_n = torch.matmul(n_support_embed, codebook_sum.T)
-        top_idx_n = cos_sim_n.argmax(dim=1)  # [600]
+        top_idx_n = cos_sim_n.argmax(dim=1)
         code_n = codebook_sum[top_idx_n]
         # query node indices
         query_indices = torch.nonzero(prompt_mask == False).squeeze(1).tolist()
         # H_q
         query_embed = X[query_indices]
-        # \tilde{H_q}
-        # query_tilde_embed = self.cross_attention(query_embed, n_support_embed)
 
         query_tilde_embed = torch.mean(n_support_embed, dim=0).unsqueeze(0).repeat(len(query_indices), 1)
         query_tilde_embed_code = torch.mean(code_n, dim=0).unsqueeze(0).repeat(len(query_indices), 1)
-        # query_tilde_embeds = self.cross_attention(query_embed, support_embed)
 
-        # dis(H_q, \tilde{H_q})
         diff = query_embed - query_tilde_embed
         diff_code = query_embed - query_tilde_embed_code
         # score

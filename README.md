@@ -1,7 +1,7 @@
 # IA-GGAD: Zero-shot Generalist Graph Anomaly Detection via Invariant and Affinity Learning
 
-This repository is the source codes implementation of "IA-GGAD: Zero-shot Generalist Graph Anomaly Detection via
-Invariant and Affinity Learning"
+This repository is the source code implementation of "IA-GGAD: Zero-shot Generalist Graph Anomaly Detection via
+Invariant and Affinity Learning" accepted by NeurIPS 2025 spotlight.
 
 ![](img.png)
 
